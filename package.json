@@ -1,0 +1,38 @@
+{
+	"name": "@borisevstratov/kps",
+	"version": "0.0.0",
+	"license": "MIT",
+	"bin": "dist/cli.js",
+	"type": "module",
+	"engines": {
+		"node": ">=16"
+	},
+	"publishConfig": {
+		"registry": "https://npm.pkg.github.com"
+	},
+	"scripts": {
+		"build": "tsc",
+		"dev": "tsc --watch",
+		"lint": "biome format --write",
+		"test": "ava"
+	},
+	"files": [
+		"dist"
+	],
+	"dependencies": {
+		"fullscreen-ink": "^0.1.0",
+		"ink": "^6.3.0",
+		"ink-select-input": "^6.2.0",
+		"ink-spinner": "^5.0.0",
+		"lowdb": "^7.0.1",
+		"react": "^19.1.1",
+		"ssh2": "^1.17.0"
+	},
+	"devDependencies": {
+		"@sindresorhus/tsconfig": "^8.0.1",
+		"@types/react": "^19.1.13",
+		"@types/ssh2": "^1.15.5",
+		"ts-node": "^10.9.2",
+		"typescript": "^5.9.2"
+	}
+}
