@@ -22,7 +22,7 @@ A terminal-based SSH connection manager.
 Install with npm
 
 ```bash
-npm install -g @borisevstratov/kps
+npm install -g @borisevstratov/kps --registry=https://npm.pkg.github.com
 ```
 
 Then run
