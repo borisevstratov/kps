@@ -2,13 +2,15 @@
 	"name": "@borisevstratov/kps",
 	"version": "0.0.2",
 	"license": "MIT",
-	"bin": "dist/cli.js",
+	"bin": {
+		"kps": "dist/cli.js"
+	},
 	"type": "module",
 	"engines": {
 		"node": ">=16"
 	},
 	"publishConfig": {
-		"registry": "https://npm.pkg.github.com"
+		"registry": "https://registry.npmjs.org/"
 	},
 	"scripts": {
 		"build": "tsc",
