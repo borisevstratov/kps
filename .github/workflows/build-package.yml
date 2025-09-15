@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      packages: write
+      id-token: write
 
     steps:
       - uses: actions/checkout@v5
@@ -20,20 +20,23 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-          registry-url: "https://npm.pkg.github.com"
-          scope: "@borisevstratov"
+          registry-url: "https://registry.npmjs.org"
 
       - run: npm ci
+        shell: bash
 
       - run: npm run build
+        shell: bash
 
       - name: Bump version
+        shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           npm version patch -m "chore: bump version to %s [skip ci]"
           git push --follow-tags
 
-      - run: npm publish
+      - run: npm publish --provenance --access public
+        shell: bash
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
