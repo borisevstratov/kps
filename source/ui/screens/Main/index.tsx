@@ -1,7 +1,7 @@
+import os from "node:os";
 import { Box, Text, useApp, useInput } from "ink";
 import { type FC, useState } from "react";
-import { connectViaCli } from "../../../core/ssh.js";
-import useSystemMetrics from "../../../hooks/useSystemMetrics.js";
+import { connectSshViaCli } from "../../../core/ssh.js";
 import type { IConnection } from "../../../types/connection.js";
 import BottomPanel from "../../components/BottomPanel/index.js";
 import TopPanel from "../../components/TopPanel/index.js";
@@ -12,9 +12,9 @@ import ConnectionPreview from "./components/ConnectionPreview.js";
 const MainScreen: FC = () => {
 	const [selectedIndex, setSelectedIndex] = useState(0);
 	const [showInfo, setShowInfo] = useState(false);
-	const { connections, removeConnection } = useConnections();
-	const metrics = useSystemMetrics();
+
 	const { exit } = useApp();
+	const { connections, removeConnection } = useConnections();
 
 	const conn = connections[selectedIndex] as IConnection;
 
@@ -29,7 +29,7 @@ const MainScreen: FC = () => {
 
 		if (key.return) {
 			exit();
-			return connectViaCli(conn);
+			return connectSshViaCli(conn);
 		}
 
 		if (input === "d") {
@@ -43,7 +43,19 @@ const MainScreen: FC = () => {
 
 	return (
 		<Box flexDirection="column" width="100%" height="100%">
-			<TopPanel metrics={metrics} />
+			<TopPanel
+				leftSlot={
+					<>
+						<Text color="blue" bold>
+							{os.hostname()}
+						</Text>
+						<Text color="cyan" bold>
+							{" "}
+							({os.type()})
+						</Text>
+					</>
+				}
+			/>
 			<Box flexDirection="column" flexGrow={1}>
 				{connections.length === 0 && (
 					<Text color="red">No connections found. Press q to exit.</Text>

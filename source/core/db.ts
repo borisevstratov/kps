@@ -15,7 +15,6 @@ interface Data {
 const adapter = new JSONFile<Data>(DB_CONFIG_FILE);
 export const db = new Low<Data>(adapter, { connections: [] });
 
-// Make sure data is loaded once
 export async function initDB() {
 	if (!fs.existsSync(DB_CONFIG_FILE)) {
 		readSshConfigAndPersist();

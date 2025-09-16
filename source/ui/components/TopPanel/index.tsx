@@ -1,15 +1,14 @@
-import { Box, Text } from "ink";
-import type { FC } from "react";
-import type { IMetrics } from "../../../types/common.js";
+import { Box } from "ink";
+import type { FC, ReactNode } from "react";
 import Logo from "../Logo/index.js";
 
 type Props = {
-	metrics: IMetrics;
+	leftSlot?: ReactNode;
+	rightSlot?: ReactNode;
 };
 
 const TopPanel: FC<Props> = (props) => {
-	const { metrics } = props;
-	const { hostname, type, cpu, ram, disk } = metrics;
+	const { leftSlot, rightSlot } = props;
 
 	return (
 		<Box
@@ -21,19 +20,9 @@ const TopPanel: FC<Props> = (props) => {
 		>
 			<Box>
 				<Logo />
-				<Text color="blue" bold>
-					{hostname}
-				</Text>
-				<Text color="cyan" bold>
-					{" "}
-					({type})
-				</Text>
+				{leftSlot}
 			</Box>
-			<Box>
-				<Text dimColor>
-					CPU: {cpu} | RAM: {ram} | Disk: {disk}
-				</Text>
-			</Box>
+			<Box>{rightSlot}</Box>
 		</Box>
 	);
 };

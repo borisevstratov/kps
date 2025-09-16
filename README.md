@@ -13,9 +13,6 @@ A terminal-based SSH connection manager.
 ## Requirements
 
 - Node.js >= 16
-- sshpass
-  - Linux `apt-get install sshpass`
-  - macOS: `brew install sshpass`
 
 ## Installation
 

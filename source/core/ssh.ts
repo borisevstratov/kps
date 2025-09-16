@@ -1,36 +1,65 @@
-import { spawn } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { Client, type ConnectConfig } from "ssh2";
 import type { IConnection } from "../types/connection.js";
 import { DB_CONFIG_FILE } from "./db.js";
 
-export async function connectViaCli(connection: IConnection) {
-	let sshCommand: string;
+export async function connectSshViaCli(connection: IConnection) {
+	const conn = new Client();
+
+	conn.on("ready", () => {
+		conn.shell((err, stream) => {
+			if (err) {
+				throw err;
+			}
+
+			// Setup raw stdin
+			if (process.stdin.isTTY) {
+				process.stdin.setRawMode(true);
+			}
+			process.stdin.resume();
+
+			process.stdin.pipe(stream);
+			stream.pipe(process.stdout);
+
+			// Handle resize
+			process.stdout.on("resize", () => {
+				stream.setWindow(process.stdout.rows, process.stdout.columns, 0, 0);
+			});
+
+			stream.on("close", () => {
+				// Reset stdin before returning
+				if (process.stdin.isTTY) {
+					process.stdin.setRawMode(false);
+				}
+				process.stdin.pause();
+
+				conn.end();
+			});
+		});
+	});
+
+	conn.on("error", (err) => {
+		console.error("SSH error:", err.message);
+	});
+
+	const sshConfig: ConnectConfig = {
+		host: connection.host,
+		port: connection.port || 22,
+		username: connection.user,
+		hostVerifier: () => true,
+	};
+
 	if (connection.password) {
-		sshCommand = `sshpass -p "${connection.password}" ssh -o StrictHostKeyChecking=no`;
-		if (connection.port && connection.port !== 22) {
-			sshCommand += ` -p ${connection.port}`;
-		}
-		sshCommand += ` ${connection.user}@${connection.host}`;
+		sshConfig.password = connection.password;
 	} else if (connection.privateKey) {
-		sshCommand = `ssh -i "${connection.privateKey}" -o StrictHostKeyChecking=no`;
-		if (connection.port && connection.port !== 22) {
-			sshCommand += ` -p ${connection.port}`;
-		}
-		sshCommand += ` ${connection.user}@${connection.host}`;
+		sshConfig.privateKey = fs.readFileSync(connection.privateKey);
 	} else {
-		return;
+		throw new Error("No auth method provided");
 	}
 
-	const sshProcess = spawn(sshCommand, [], {
-		stdio: "inherit",
-		shell: true,
-	});
-
-	sshProcess.on("error", (error) => {
-		console.error("Failed to start SSH process:", error);
-	});
+	conn.connect(sshConfig);
 }
 
 export function readSshConfigAndPersist(): void {
