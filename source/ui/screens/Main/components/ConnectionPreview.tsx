@@ -28,7 +28,9 @@ const ConnectionPreview: FC<Props> = (props) => {
 			<Text>Host: {connection.host}</Text>
 			<Text>Port: {connection.port || 22}</Text>
 			{connection.password && <Text>Password: {connection.password}</Text>}
-			{connection.privateKey && <Text>Identity: {connection.privateKey}</Text>}
+			{connection.privateKey && (
+				<Text>Private key: {connection.privateKey}</Text>
+			)}
 		</Box>
 	);
 };

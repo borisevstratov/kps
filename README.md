@@ -44,7 +44,7 @@ It contains an array of connections:
       "user": "developer",
       "host": "127.0.0.1",
       "port": 22,
-      "identity": "~/.ssh/id_rsa"
+      "privateKey": "~/.ssh/id_rsa"
     },
     {
       "name": "staging-app",

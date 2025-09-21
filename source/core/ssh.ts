@@ -5,61 +5,70 @@ import { Client, type ConnectConfig } from "ssh2";
 import type { IConnection } from "../types/connection.js";
 import { DB_CONFIG_FILE } from "./db.js";
 
-export async function connectSshViaCli(connection: IConnection) {
-	const conn = new Client();
+export function connectSshViaCli(connection: IConnection): Promise<void> {
+	return new Promise((resolve, reject) => {
+		const conn = new Client();
 
-	conn.on("ready", () => {
-		conn.shell((err, stream) => {
-			if (err) {
-				throw err;
-			}
+		// Error before "ready"
+		conn.on("error", (err) => {
+			reject(new Error(`SSH error: ${err.message}`));
+		});
 
-			// Setup raw stdin
-			if (process.stdin.isTTY) {
-				process.stdin.setRawMode(true);
-			}
-			process.stdin.resume();
+		conn.on("ready", () => {
+			conn.shell((err, stream) => {
+				if (err) return reject(err);
 
-			process.stdin.pipe(stream);
-			stream.pipe(process.stdout);
-
-			// Handle resize
-			process.stdout.on("resize", () => {
-				stream.setWindow(process.stdout.rows, process.stdout.columns, 0, 0);
-			});
-
-			stream.on("close", () => {
-				// Reset stdin before returning
+				// Setup raw stdin
 				if (process.stdin.isTTY) {
-					process.stdin.setRawMode(false);
+					process.stdin.setRawMode(true);
 				}
-				process.stdin.pause();
+				process.stdin.resume();
 
-				conn.end();
+				process.stdin.pipe(stream);
+				stream.pipe(process.stdout);
+
+				// Handle resize
+				process.stdout.on("resize", () => {
+					stream.setWindow(process.stdout.rows, process.stdout.columns, 0, 0);
+				});
+
+				stream.on("close", () => {
+					// Reset stdin
+					if (process.stdin.isTTY) {
+						process.stdin.setRawMode(false);
+					}
+					process.stdin.pause();
+
+					conn.end();
+				});
+
+				// Resolve only when shell is opened successfully
+				resolve();
 			});
 		});
+
+		const sshConfig: ConnectConfig = {
+			host: connection.host,
+			port: connection.port || 22,
+			username: connection.user,
+			hostVerifier: () => true,
+		};
+
+		if (connection.password) {
+			sshConfig.password = connection.password;
+		} else if (connection.privateKey) {
+			sshConfig.privateKey = fs.readFileSync(connection.privateKey);
+		} else {
+			reject(
+				new Error(
+					"No authentication method provided (password/privateKey missing)",
+				),
+			);
+			return;
+		}
+
+		conn.connect(sshConfig);
 	});
-
-	conn.on("error", (err) => {
-		console.error("SSH error:", err.message);
-	});
-
-	const sshConfig: ConnectConfig = {
-		host: connection.host,
-		port: connection.port || 22,
-		username: connection.user,
-		hostVerifier: () => true,
-	};
-
-	if (connection.password) {
-		sshConfig.password = connection.password;
-	} else if (connection.privateKey) {
-		sshConfig.privateKey = fs.readFileSync(connection.privateKey);
-	} else {
-		throw new Error("No auth method provided");
-	}
-
-	conn.connect(sshConfig);
 }
 
 export function readSshConfigAndPersist(): void {
