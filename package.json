@@ -1,6 +1,6 @@
 {
 	"name": "@borisevstratov/kps",
-	"version": "0.0.9",
+	"version": "0.0.10",
 	"license": "MIT",
 	"bin": {
 		"kps": "dist/cli.js"
